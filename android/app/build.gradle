@@ -1,0 +1,99 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+//    id "com.google.gms.google-services"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.lifecycle:lifecycle-livedata-core:2.6.2'
+        force 'androidx.lifecycle:lifecycle-runtime:2.6.2'
+        force 'androidx.lifecycle:lifecycle-common:2.6.2'
+        force 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
+    }
+}
+
+android {
+    namespace = "com.geolab.responder_app"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = "28.1.13356709"
+
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+
+    defaultConfig {
+        applicationId = "com.geolab.responder_app"
+        minSdk = 23
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0.0"
+        multiDexEnabled true
+    }
+
+    signingConfigs {
+        production {
+            storeFile file(PRODUCTION_STORE_FILE)
+            storePassword PRODUCTION_STORE_PASSWORD
+            keyAlias PRODUCTION_KEY_ALIAS
+            keyPassword PRODUCTION_KEY_PASSWORD
+        }
+
+        development {
+            storeFile file(DEVELOPMENT_STORE_FILE)
+            storePassword DEVELOPMENT_STORE_PASSWORD
+            keyAlias DEVELOPMENT_KEY_ALIAS
+            keyPassword DEVELOPMENT_KEY_PASSWORD
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig null //To ignore this and takes flavor signing
+            debuggable true
+        }
+
+        release {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    flavorDimensions "api"
+    productFlavors {
+        def productionSigningVariable = signingConfigs.production
+        def developmentSigningVariable = signingConfigs.development
+        development {
+            dimension "api"
+            signingConfig developmentSigningVariable
+        }
+        production {
+            dimension "api"
+            signingConfig productionSigningVariable
+        }
+    }
+
+}
+
+flutter {
+    source = "../.."
+}
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    implementation 'androidx.multidex:multidex:2.0.1'
+}
